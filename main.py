@@ -52,7 +52,9 @@ def get_timeslots_for_location_ids(
     return all_timeslots
 
 
-def generate_notification_texts(location_mapping: dict, all_timeslots: dict) -> None:
+def generate_notification_texts(
+    location_mapping: dict, all_timeslots: dict, loud: bool
+) -> None:
     """Generate the text for the notification."""
     notification_texts = ["Global Entry Timeslot Bot"]
     for location_id, timeslots in all_timeslots.items():
@@ -63,11 +65,18 @@ def generate_notification_texts(location_mapping: dict, all_timeslots: dict) -> 
             )
             for timeslot in timeslots:
                 location_texts.append(
-                    "    {}".format(timeslot.strftime("%B %-d, %Y (%a) @ %-I:%M %p"))
+                    "    {}".format(
+                        timeslot.strftime("%B %d, %Y (%a) @ %I:%M %p").replace(
+                            " 0", " "
+                        )
+                    )
                 )
             notification_texts.append("\n".join(location_texts))
     if len(notification_texts) == 1:
-        notification_texts.append("No open timeslots found!")
+        if loud:
+            notification_texts.append("No open timeslots found!")
+        else:
+            return []
     return notification_texts
 
 
@@ -99,12 +108,22 @@ if __name__ == "__main__":
         type=int,
         help="Limit of appointments to fetch, per location",
     )
+    parser.add_argument(
+        "--loud",
+        default=False,
+        action="store_true",
+        help="Notify even if there are no open timeslots",
+    )
 
-    kwargs = vars(parser.parse_args())
-    kwargs = {k: v for k, v in kwargs.items() if v is not None}  # strip empty params.
+    args = vars(parser.parse_args())
+    kwargs = {
+        k: args[k] for k in ["location_ids", "before", "limit"] if args[k] is not None
+    }  # strip empty params for parameters when getting timeslots.
 
     location_mapping = import_mapping_from_url()
     all_timeslots = get_timeslots_for_location_ids(**kwargs)
-    notification_text = generate_notification_texts(location_mapping, all_timeslots)
+    notification_text = generate_notification_texts(
+        location_mapping, all_timeslots, args["loud"]
+    )
 
     send_to_discord(notification_text)
