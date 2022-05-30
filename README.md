@@ -11,9 +11,10 @@ Scraper for [Global Entry](https://www.cbp.gov/travel/trusted-traveler-programs/
 - `--location-ids`, a space-separated list of location ids to check for appointments.
 - `--before`, a YYYY-MM-DD formatted date to filter appointment lookups (only appointments before this date will be returned).
 - `--limit`, the number of appointments per location to retrieve.
+- `--silent`, flag to suppress messages when there are no open timeslots.
 
 Example usage:
-```python3 main.py --location-ids 5140 5444 --before 2023-01-01 --limit 5```
+```python3 main.py --location-ids 5140 5444 --before 2023-01-01 --limit 5 --silent```
 
 The script, of course, can be modified to provide notifications other than Discord messages.
 

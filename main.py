@@ -53,10 +53,10 @@ def get_timeslots_for_location_ids(
 
 
 def generate_notification_texts(
-    location_mapping: dict, all_timeslots: dict, loud: bool
+    location_mapping: dict, all_timeslots: dict, silent: bool
 ) -> None:
     """Generate the text for the notification."""
-    notification_texts = ["Global Entry Timeslot Bot"]
+    notification_texts = ["✈️ Global Entry Timeslot Bot ✈️"]
     for location_id, timeslots in all_timeslots.items():
         if len(timeslots) > 0:
             location_texts = []
@@ -73,10 +73,10 @@ def generate_notification_texts(
                 )
             notification_texts.append("\n".join(location_texts))
     if len(notification_texts) == 1:
-        if loud:
-            notification_texts.append("No open timeslots found!")
-        else:
+        if silent:
             return []
+        else:
+            notification_texts.append("No open timeslots found!")
     return notification_texts
 
 
@@ -109,10 +109,10 @@ if __name__ == "__main__":
         help="Limit of appointments to fetch, per location",
     )
     parser.add_argument(
-        "--loud",
+        "--silent",
         default=False,
         action="store_true",
-        help="Notify even if there are no open timeslots",
+        help="Suppress notifications if there are no open timeslots",
     )
 
     args = vars(parser.parse_args())
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     location_mapping = import_mapping_from_url()
     all_timeslots = get_timeslots_for_location_ids(**kwargs)
     notification_text = generate_notification_texts(
-        location_mapping, all_timeslots, args["loud"]
+        location_mapping, all_timeslots, args["silent"]
     )
 
     send_to_discord(notification_text)
